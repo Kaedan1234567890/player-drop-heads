@@ -41,12 +41,15 @@ public final class ChillZonePlayerHeads implements ModInitializer {
             head.set(DataComponents.CUSTOM_NAME, Component.literal(player.getGameProfile().name() + "'s Head")
                     .withStyle(ChatFormatting.GOLD).withStyle(style -> style.withItalic(false)));
 
-            String dimension = level.dimension().toString();
+            String dimensionKey = level.dimension().toString();
+            String dimension = dimensionKey.contains("the_nether") ? "Nether"
+                    : dimensionKey.contains("the_end") ? "End"
+                    : dimensionKey.contains("overworld") ? "Overworld" : "Other";
             String timestamp = LocalDateTime.now(DATE_ZONE).format(DATE);
             head.set(DataComponents.LORE, new ItemLore(List.of(
-                Component.literal("Killed by: " + killer.getGameProfile().name()).withStyle(ChatFormatting.RED),
-                Component.literal("Dimension: " + dimension).withStyle(ChatFormatting.GRAY),
-                Component.literal("Date: " + timestamp).withStyle(ChatFormatting.YELLOW)
+                Component.literal("Killed by: " + killer.getGameProfile().name()).withStyle(style -> style.withColor(ChatFormatting.RED).withItalic(false)),
+                Component.literal("Dimension: " + dimension).withStyle(style -> style.withColor(ChatFormatting.GRAY).withItalic(false)),
+                Component.literal("Date: " + timestamp).withStyle(style -> style.withColor(ChatFormatting.YELLOW).withItalic(false))
             )));
 
             ItemEntity drop = new ItemEntity(level, player.getX(), player.getY() + 0.4D, player.getZ(), head);
