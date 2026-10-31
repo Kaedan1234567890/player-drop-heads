@@ -1,0 +1,1 @@
+Chill Zone Player Heads 26.3 alpha 2: one head only when a player kills another player, with killer, dimension, date (Ontario time), no coordinates. Server side only. Based on previous MIT licensed source concept. ZIP static checks only; no Gradle compilation performed. Do not co-install another head drop mod.

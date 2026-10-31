@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "chillzoneplayerheads",
+  "version": "${version}",
+  "name": "Chill Zone Player Heads",
+  "description": "26.3 server-side death heads with killer, dimension and date (no coordinates); fork concept based on MIT CustomPlayerHeads",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "com.chillzone.playerheads.ChillZonePlayerHeads"
+    ]
+  },
+  "depends": {
+    "minecraft": "26.3",
+    "fabricloader": ">=0.19.5",
+    "fabric-api": "*",
+    "java": ">=25"
+  }
+}
