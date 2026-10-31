@@ -41,10 +41,10 @@ public final class ChillZonePlayerHeads implements ModInitializer {
             head.set(DataComponents.CUSTOM_NAME, Component.literal(player.getGameProfile().name() + "'s Head")
                     .withStyle(ChatFormatting.GOLD).withStyle(style -> style.withItalic(false)));
 
-            String dimensionKey = level.dimension().toString();
-            String dimension = dimensionKey.contains("the_nether") ? "Nether"
-                    : dimensionKey.contains("the_end") ? "End"
-                    : dimensionKey.contains("overworld") ? "Overworld" : "Other";
+            // Compare ResourceKey objects directly rather than showing their debug strings.
+            String dimension = level.dimension().equals(net.minecraft.world.level.Level.NETHER) ? "Nether"
+                    : level.dimension().equals(net.minecraft.world.level.Level.END) ? "End"
+                    : level.dimension().equals(net.minecraft.world.level.Level.OVERWORLD) ? "Overworld" : "Other";
             String timestamp = LocalDateTime.now(DATE_ZONE).format(DATE);
             head.set(DataComponents.LORE, new ItemLore(List.of(
                 Component.literal("Killed by: " + killer.getGameProfile().name()).withStyle(style -> style.withColor(ChatFormatting.RED).withItalic(false)),
