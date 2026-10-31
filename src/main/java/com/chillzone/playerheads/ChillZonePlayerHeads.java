@@ -41,7 +41,7 @@ public final class ChillZonePlayerHeads implements ModInitializer {
             head.set(DataComponents.CUSTOM_NAME, Component.literal(player.getGameProfile().name() + "'s Head")
                     .withStyle(ChatFormatting.GOLD).withStyle(style -> style.withItalic(false)));
 
-            String dimension = level.dimension().location().toString();
+            String dimension = level.dimension().toString();
             String timestamp = LocalDateTime.now(DATE_ZONE).format(DATE);
             head.set(DataComponents.LORE, new ItemLore(List.of(
                 Component.literal("Killed by: " + killer.getGameProfile().name()).withStyle(ChatFormatting.RED),
