@@ -2,6 +2,7 @@ package com.chillzone.playerheads;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -18,6 +19,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Chill Zone server-side port/reimplementation of the MIT CustomPlayerHeads death-drop concept.
@@ -27,8 +30,34 @@ public final class ChillZonePlayerHeads implements ModInitializer {
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("MMMM d, yyyy");
     private static final ZoneId DATE_ZONE = ZoneId.of("America/Toronto");
 
+    // A death callback runs before the entire death/respawn process has finished.
+    // Queue drops on the server thread so fake players cannot grab their own head
+    // while their old entity is still being cleaned up.
+    private static final List<PendingHead> PENDING = new ArrayList<>();
+    private record PendingHead(ServerLevel level, double x, double y, double z, ItemStack head, int ticks) {}
+
     @Override
     public void onInitialize() {
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            Iterator<PendingHead> iterator = PENDING.iterator();
+            List<PendingHead> ready = new ArrayList<>();
+            List<PendingHead> later = new ArrayList<>();
+            while (iterator.hasNext()) {
+                PendingHead pending = iterator.next();
+                iterator.remove();
+                if (pending.ticks() > 1) {
+                    later.add(new PendingHead(pending.level(), pending.x(), pending.y(), pending.z(), pending.head(), pending.ticks() - 1));
+                } else {
+                    ready.add(pending);
+                }
+            }
+            PENDING.addAll(later);
+            for (PendingHead pending : ready) {
+                ItemEntity drop = new ItemEntity(pending.level(), pending.x(), pending.y(), pending.z(), pending.head());
+                drop.setPickUpDelay(20); // Another 1 second before ANY entity can collect it.
+                pending.level().addFreshEntity(drop);
+            }
+        });
         ServerLivingEntityEvents.AFTER_DEATH.register((victim, damage) -> {
             if (!(victim instanceof ServerPlayer player)) return;
             Entity attacker = damage.getEntity();
@@ -52,8 +81,7 @@ public final class ChillZonePlayerHeads implements ModInitializer {
                 Component.literal("Date: " + timestamp).withStyle(style -> style.withColor(ChatFormatting.YELLOW).withItalic(false))
             )));
 
-            ItemEntity drop = new ItemEntity(level, player.getX(), player.getY() + 0.4D, player.getZ(), head);
-            level.addFreshEntity(drop);
+            PENDING.add(new PendingHead(level, player.getX(), player.getY() + 0.4D, player.getZ(), head, 15));
         });
     }
 }
